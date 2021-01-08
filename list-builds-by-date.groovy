@@ -8,7 +8,8 @@ def matchedJobs = Jenkins.instance.items.findAll { job ->
     job.name =~ /$jobPattern/
 }
 
-def result = new TreeMap();
+def success = new TreeMap();
+def failed = new TreeMap();
 
 matchedJobs.each{
     it.items.each{
@@ -16,12 +17,22 @@ matchedJobs.each{
             date = it.time.toInstant()
       			.atZone(ZoneId.systemDefault())
       			.toLocalDate()
+            def s = it.result == Result.SUCCESS ? 1 : 0
+            def f = it.result == Result.SUCCESS ? 0 : 1
           
-            result.merge(date, 1, Integer.&sum)
+            success.merge(date, s, Integer.&sum)
+            failed.merge(date, f, Integer.&sum)
         }
     }
 }
 
-result.each{
-  println("$it.key, $it.value")
+println("Date, Success, Failed, Builds")
+success.each{
+  def date = it.key;
+  def s = success.get(date)
+  def f = failed.get(date)
+  def b = s + f
+  println("$date, $s, $f, $b")
 }
+
+return
